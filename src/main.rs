@@ -1,7 +1,7 @@
 use num_traits::pow;
 
-fn generate(f: fn(i32) -> i32) -> Vec<i32> {
-    let mut result: Vec<i32> = Vec::new();
+fn generate(f: fn(u32) -> u32) -> Vec<u32> {
+    let mut result: Vec<u32> = Vec::new();
 
     let mut i = 1;
     let mut f1 = f(i);
@@ -24,26 +24,42 @@ fn get_digit(a: u32, k: u8) -> u8 {
     ((a % static_data[k as usize]) / data2[k as usize]) as u8
 }
 
-fn get_last_two_digits(a: u32) -> u32 {
+fn get_last_two_digits(a: &u32) -> u32 {
     (10 * get_digit(a, 1) + get_digit(a, 0)).into()
 }
 
-fn get_first_two_digits(a: u32) -> u32 {
-   (10 * get_digit(a, 3) + get_digit(a, 2)).into()
+fn get_first_two_digits(a: &u32) -> u32 {
+    (10 * get_digit(a, 3) + get_digit(a, 2)).into()
 }
 
-fn numbers_do_chain(a: u32, b: u32) -> bool {
+fn numbers_do_chain(a: &u32, b: &u32) -> bool {
     get_last_two_digits(a) == get_first_two_digits(b)
+}
+
+fn try_cycle( trial: &u32, level: usize, data: & Vec<Vec<u32>> ){ 
+    for i in &data[level]{
+        if numbers_do_chain(trial, i ){ 
+            try_cycle( i , level+1, data)
+        }
+    }
 }
 
 fn main() {
     println!("Hello, world!");
 
-    let t = generate(|i| i * (i + 1) / 2);
-    let s = generate(|i| i * i);
+    let mut data: Vec<Vec<u32>> = Vec::new();
 
-    for i in s {
+    data.push(generate(|i| i * (i + 1) / 2));
+    data.push(generate(|i| i * i));
+    data.push(generate(|i| i * (3 * i - 1) / 2));
+    data.push(generate(|i| i * (2 * i - 1)));
+    data.push(generate(|i| i * (5 * i - 3) / 2));
+    data.push(generate(|i| i * (3 * i - 2)));
+
+    for i in &data[0] {
         println!("{}", i)
+        let next_level = 1;
+        try_cycle( i, next_level, data)
     }
 }
 
@@ -78,10 +94,9 @@ mod tests {
         assert_eq!(get_first_two_digits(0), 0);
     }
 
-
     #[test]
     fn test_chain() {
-        assert_eq!(numbers_do_chain(2356, 5600), true );
-        assert_eq!(numbers_do_chain( 1256, 5700), false);
+        assert_eq!(numbers_do_chain(2356, 5600), true);
+        assert_eq!(numbers_do_chain(1256, 5700), false);
     }
 }
