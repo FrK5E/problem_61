@@ -17,7 +17,7 @@ fn generate(f: fn(u32) -> u32) -> Vec<u32> {
     result
 }
 
-fn get_digit(a: u32, k: u8) -> u8 {
+fn get_digit(a: &u32, k: u8) -> u8 {
     let static_data: [u32; 4] = core::array::from_fn(|i| pow(10, i + 1));
     let data2: [u32; 4] = core::array::from_fn(|i| pow(10, i));
 
@@ -36,10 +36,21 @@ fn numbers_do_chain(a: &u32, b: &u32) -> bool {
     get_last_two_digits(a) == get_first_two_digits(b)
 }
 
-fn try_cycle( trial: &u32, level: usize, data: & Vec<Vec<u32>> ){ 
-    for i in &data[level]{
-        if numbers_do_chain(trial, i ){ 
-            try_cycle( i , level+1, data)
+fn try_cycle(trial: &u32, level: usize, data: &Vec<Vec<u32>>, chain: &[u32; 6]) {
+    if level == data.len() {
+        if numbers_do_chain(trial, &chain[0]) {
+            println!(
+                "Heureka: {}, {}, {}, {}, {}, {}",
+                chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]
+            );
+            return;
+        }
+    }
+    for i in &data[level] {
+        if numbers_do_chain(trial, i) {
+            let next_level = level + 1;
+            println!("trial {}, next {}", trial, i);
+            try_cycle(i, next_level, data, chain);
         }
     }
 }
@@ -57,9 +68,11 @@ fn main() {
     data.push(generate(|i| i * (3 * i - 2)));
 
     for i in &data[0] {
-        println!("{}", i)
+        // println!("{}", i);
         let next_level = 1;
-        try_cycle( i, next_level, data)
+        let mut trial: [u32; 6] = [0; 6];
+        trial[0] = *i;
+        try_cycle(i, next_level, &data, &trial);
     }
 }
 
