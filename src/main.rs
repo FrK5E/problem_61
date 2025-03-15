@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use num_traits::pow;
 
 fn generate(f: fn(u32) -> u32) -> Vec<u32> {
@@ -36,26 +37,22 @@ fn numbers_do_chain(a: &u32, b: &u32) -> bool {
     get_last_two_digits(a) == get_first_two_digits(b)
 }
 
-fn try_cycle(trial: &u32, level: usize, data: &Vec<Vec<u32>>, chain: &mut [u32; 6]) {
-
+fn try_cycle(trial: &u32, level: usize, data: &Vec<Vec<u32>>, perm: &Vec<usize>, chain: &mut [u32; 6]) {
     if level == data.len() {
-        println!(
-            "DEBUG: {}, {}, {}, {}, {}, {}",
-            chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]
-        );
         if numbers_do_chain(trial, &chain[0]) {
             println!(
                 "Heureka: {}, {}, {}, {}, {}, {}",
                 chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]
             );
+            println!( "SUM: {} ", chain.iter().sum::<u32>() )
         }
         return;
     }
-    for i in &data[level] {
+    for i in &data[perm[level]] {
         if numbers_do_chain(trial, i) {
             chain[level] = *i;
             let next_level = level + 1;
-            try_cycle(i, next_level, data, chain);
+            try_cycle(i, next_level, data, perm, chain);
         }
     }
 }
@@ -72,13 +69,19 @@ fn main() {
     data.push(generate(|i| i * (5 * i - 3) / 2));
     data.push(generate(|i| i * (3 * i - 2)));
 
-    for i in &data[0] {
-        println!("DEBGU1 {}", i);
-        let next_level = 1;
-        let mut trial: [u32; 6] = [0; 6];
-        trial[0] = *i;
-        try_cycle(i, next_level, &data, &mut trial);
+
+    for perm in (0..6).permutations(6) { 
+        // println!( "perm {} {} {} {} {} {} ", perm[0], perm[1], perm[2], perm[3], perm[4], perm[5] );
+        for i in &data[perm[0]] {
+            let next_level = 1;
+            let mut trial: [u32; 6] = [0; 6];
+            trial[0] = *i;
+            try_cycle(i, next_level, &data, &perm,&mut trial);
+        }
     }
+    return;
+
+   
 }
 
 #[cfg(test)]
