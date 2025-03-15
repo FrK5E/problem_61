@@ -36,20 +36,25 @@ fn numbers_do_chain(a: &u32, b: &u32) -> bool {
     get_last_two_digits(a) == get_first_two_digits(b)
 }
 
-fn try_cycle(trial: &u32, level: usize, data: &Vec<Vec<u32>>, chain: &[u32; 6]) {
+fn try_cycle(trial: &u32, level: usize, data: &Vec<Vec<u32>>, chain: &mut [u32; 6]) {
+
     if level == data.len() {
+        println!(
+            "DEBUG: {}, {}, {}, {}, {}, {}",
+            chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]
+        );
         if numbers_do_chain(trial, &chain[0]) {
             println!(
                 "Heureka: {}, {}, {}, {}, {}, {}",
                 chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]
             );
-            return;
         }
+        return;
     }
     for i in &data[level] {
         if numbers_do_chain(trial, i) {
+            chain[level] = *i;
             let next_level = level + 1;
-            println!("trial {}, next {}", trial, i);
             try_cycle(i, next_level, data, chain);
         }
     }
@@ -68,11 +73,11 @@ fn main() {
     data.push(generate(|i| i * (3 * i - 2)));
 
     for i in &data[0] {
-        // println!("{}", i);
+        println!("DEBGU1 {}", i);
         let next_level = 1;
         let mut trial: [u32; 6] = [0; 6];
         trial[0] = *i;
-        try_cycle(i, next_level, &data, &trial);
+        try_cycle(i, next_level, &data, &mut trial);
     }
 }
 
@@ -85,31 +90,31 @@ mod tests {
     fn test_digit() {
         let a: u32 = 9876;
 
-        assert_eq!(get_digit(a, 0), 6);
-        assert_eq!(get_digit(a, 1), 7);
-        assert_eq!(get_digit(a, 2), 8);
-        assert_eq!(get_digit(a, 3), 9);
+        assert_eq!(get_digit(&a, 0), 6);
+        assert_eq!(get_digit(&a, 1), 7);
+        assert_eq!(get_digit(&a, 2), 8);
+        assert_eq!(get_digit(&a, 3), 9);
     }
 
     #[test]
     fn test_last_two() {
-        assert_eq!(get_last_two_digits(2356), 56);
-        assert_eq!(get_last_two_digits(2300), 0);
-        assert_eq!(get_last_two_digits(99), 99);
-        assert_eq!(get_last_two_digits(0), 0);
+        assert_eq!(get_last_two_digits(&2356), 56);
+        assert_eq!(get_last_two_digits(&2300), 0);
+        assert_eq!(get_last_two_digits(&99), 99);
+        assert_eq!(get_last_two_digits(&0), 0);
     }
 
     #[test]
     fn test_first_two() {
-        assert_eq!(get_first_two_digits(2356), 23);
-        assert_eq!(get_first_two_digits(2300), 23);
-        assert_eq!(get_first_two_digits(99), 0);
-        assert_eq!(get_first_two_digits(0), 0);
+        assert_eq!(get_first_two_digits(&2356), 23);
+        assert_eq!(get_first_two_digits(&2300), 23);
+        assert_eq!(get_first_two_digits(&99), 0);
+        assert_eq!(get_first_two_digits(&0), 0);
     }
 
     #[test]
     fn test_chain() {
-        assert_eq!(numbers_do_chain(2356, 5600), true);
-        assert_eq!(numbers_do_chain(1256, 5700), false);
+        assert_eq!(numbers_do_chain(&2356, &5600), true);
+        assert_eq!(numbers_do_chain(&1256, &5700), false);
     }
 }
